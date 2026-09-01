@@ -73,3 +73,8 @@ postgres_data/
 # Local uploads
 uploads/
 media/
+
+# Test / coverage
+.coverage
+htmlcov/
+.pytest_cache/
