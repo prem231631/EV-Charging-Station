@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from sqlalchemy import text
 
-from app.database import engine
+from app.database import Base, engine
+from app.models import User
 
 
 app = FastAPI(
@@ -9,6 +10,11 @@ app = FastAPI(
     description="Backend API for the EV Charging Station Platform",
     version="1.0.0",
 )
+
+
+@app.on_event("startup")
+def create_tables():
+    Base.metadata.create_all(bind=engine)
 
 
 @app.get("/")
