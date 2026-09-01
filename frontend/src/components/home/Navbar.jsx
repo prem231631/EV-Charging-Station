@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { FiMapPin, FiUser } from "react-icons/fi";
 import "../../styles/navbar.css";
+import ThemeToggle from "../common/ThemeToggle";
 
 function Navbar() {
     return (
@@ -20,6 +21,8 @@ function Navbar() {
                 </nav>
 
                 <div className="navbar-actions">
+                    <ThemeToggle />
+
                     <Link to="/login" className="navbar-login">
                         <FiUser />
                         Login
