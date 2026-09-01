@@ -1,4 +1,4 @@
-import { FiCheckCircle } from "react-icons/fi";
+import { FiCheckCircle, FiZap } from "react-icons/fi";
 import "../../styles/whyChooseUs.css";
 
 function WhyChooseUs() {
