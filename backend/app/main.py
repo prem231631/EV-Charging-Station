@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from sqlalchemy import text
 
 from app.database import Base, engine
-from app.models import User, Vehicle
+from app.models import User, Vehicle, Station, Charger
 
 from app.api.stations import router as stations_router
 
