@@ -3,8 +3,16 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import User
-from app.schemas.auth import RegisterRequest, UserResponse
-from app.core.security import hash_password
+from app.schemas.auth import (
+    RegisterRequest,
+    LoginRequest,
+    UserResponse,
+)
+from app.core.security import (
+    hash_password,
+    verify_password,
+    create_access_token,
+)
 
 
 router = APIRouter(
@@ -12,6 +20,10 @@ router = APIRouter(
     tags=["Authentication"],
 )
 
+
+# =========================================================
+# REGISTER
+# =========================================================
 
 @router.post(
     "/register",
@@ -25,7 +37,7 @@ def register(
 
     existing_user = (
         db.query(User)
-        .filter(User.email == data.email)
+        .filter(User.email == data.email.lower())
         .first()
     )
 
@@ -62,3 +74,61 @@ def register(
     db.refresh(user)
 
     return user
+
+
+# =========================================================
+# LOGIN
+# =========================================================
+
+@router.post("/login")
+def login(
+    data: LoginRequest,
+    db: Session = Depends(get_db),
+):
+
+    user = (
+        db.query(User)
+        .filter(User.email == data.email.lower())
+        .first()
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password.",
+        )
+
+    if not verify_password(
+        data.password,
+        user.password_hash,
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password.",
+        )
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your account is inactive.",
+        )
+
+    access_token = create_access_token(
+        data={
+            "sub": str(user.id),
+            "email": user.email,
+            "role": user.role,
+        }
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "full_name": user.full_name,
+            "email": user.email,
+            "phone": user.phone,
+            "role": user.role,
+        },
+    }
