@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
 from app.services.open_charge_map import get_nepal_stations
 from app.services.station_sync import sync_nepal_stations
 
+from app.models import Station
+from app.schemas.station import StationResponse
 
 router = APIRouter(
     prefix="/api/stations",
@@ -76,3 +78,22 @@ def synchronize_stations(
                 f"{str(error)}"
             ),
         )
+
+
+@router.get(
+    "",
+    response_model=list[StationResponse],
+)
+def get_stations(
+    db: Session = Depends(get_db),
+):
+    stations = (
+        db.query(Station)
+        .options(
+            joinedload(Station.chargers)
+        )
+        .order_by(Station.name)
+        .all()
+    )
+
+    return stations
