@@ -5,6 +5,7 @@ from app.database import Base, engine
 from app.models import User, Vehicle, Station, Charger
 
 from app.api.stations import router as stations_router
+from app.api.auth import router as auth_router
 
 app = FastAPI(
     title="EV Charging Station API",
@@ -13,6 +14,7 @@ app = FastAPI(
 )
 
 app.include_router(stations_router)
+app.include_router(auth_router)
 
 
 @app.on_event("startup")
