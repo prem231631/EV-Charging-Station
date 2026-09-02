@@ -9,7 +9,6 @@ from app.database import Base
 class User(Base):
     __tablename__ = "users"
 
-
     id: Mapped[int] = mapped_column(
         primary_key=True,
         index=True,
@@ -63,7 +62,7 @@ class User(Base):
         nullable=False,
     )
 
-vehicles: Mapped[list["Vehicle"]] = relationship(
+    vehicles: Mapped[list["Vehicle"]] = relationship(
         "Vehicle",
         back_populates="user",
         cascade="all, delete-orphan",
