@@ -1,32 +1,35 @@
 import api from "./api";
 
 
-// ========================================
-// REGISTER
-// ========================================
+const API_BASE_URL =
+    import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+
 
 export async function registerUser(userData) {
-    try {
-        const response = await api.post(
-            "/api/auth/register",
-            userData
+    const response = await fetch(
+        `${API_BASE_URL}/api/auth/register`,
+        {
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json",
+            },
+
+            body: JSON.stringify(userData),
+        }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            data.detail || "Registration failed."
         );
-
-        return response.data;
-
-    } catch (error) {
-        const message =
-            error.response?.data?.detail ||
-            "Registration failed.";
-
-        throw new Error(message);
     }
+
+    return data;
 }
 
-
-// ========================================
-// LOGIN
-// ========================================
 
 export async function loginUser(credentials) {
     try {
@@ -47,22 +50,36 @@ export async function loginUser(credentials) {
 }
 
 
-// ========================================
-// CURRENT USER
-// ========================================
+/* ==========================================
+   GET CURRENT LOGGED-IN USER
+========================================== */
 
 export async function getCurrentUser() {
+
+    const token = localStorage.getItem("access_token");
+
+    if (!token) {
+        throw new Error("Not authenticated.");
+    }
+
     try {
+
         const response = await api.get(
-            "/api/auth/me"
+            "/api/auth/me",
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
         );
 
         return response.data;
 
     } catch (error) {
+
         const message =
             error.response?.data?.detail ||
-            "Unable to get current user.";
+            "Unable to load user information.";
 
         throw new Error(message);
     }

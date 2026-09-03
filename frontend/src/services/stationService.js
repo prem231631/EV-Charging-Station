@@ -1,17 +1,22 @@
-const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+import api from "./api";
 
 
 export async function getStations() {
-    const response = await fetch(
-        `${API_BASE_URL}/api/stations`
-    );
 
-    if (!response.ok) {
-        throw new Error(
-            `Failed to fetch stations: ${response.status}`
+    try {
+
+        const response = await api.get(
+            "/api/stations"
         );
-    }
 
-    return response.json();
+        return response.data;
+
+    } catch (error) {
+
+        const message =
+            error.response?.data?.detail ||
+            "Unable to load charging stations.";
+
+        throw new Error(message);
+    }
 }
