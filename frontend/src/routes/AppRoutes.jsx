@@ -8,26 +8,71 @@ import NotFound from "../pages/public/NotFound";
 import Dashboard from "../pages/user/Dashboard";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 
+import ProtectedRoute from "./ProtectedRoute";
+
+
 function AppRoutes() {
     return (
         <BrowserRouter>
             <Routes>
-                {/* Public Routes */}
-                <Route path="/" element={<Home />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
 
-                {/* User Routes */}
-                <Route path="/dashboard" element={<Dashboard />} />
+                {/* ================================
+                    PUBLIC ROUTES
+                ================================= */}
 
-                {/* Admin Routes */}
-                <Route path="/admin" element={<AdminDashboard />} />
+                <Route
+                    path="/"
+                    element={<Home />}
+                />
 
-                {/* 404 */}
-                <Route path="*" element={<NotFound />} />
+                <Route
+                    path="/login"
+                    element={<Login />}
+                />
+
+                <Route
+                    path="/register"
+                    element={<Register />}
+                />
+
+
+                {/* ================================
+                    PROTECTED USER ROUTES
+                ================================= */}
+
+                <Route element={<ProtectedRoute />}>
+
+                    <Route
+                        path="/dashboard"
+                        element={<Dashboard />}
+                    />
+
+                </Route>
+
+
+                {/* ================================
+                    ADMIN ROUTE
+                ================================= */}
+
+                <Route
+                    path="/admin"
+                    element={<AdminDashboard />}
+                />
+
+
+                {/* ================================
+                    404
+                ================================= */}
+
+                <Route
+                    path="*"
+                    element={<NotFound />}
+                />
+
             </Routes>
         </BrowserRouter>
     );
 }
+
 
 export default AppRoutes;
