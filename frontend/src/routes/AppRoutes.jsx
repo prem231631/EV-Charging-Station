@@ -11,7 +11,7 @@ import Stations from "../pages/user/Stations";
 import StationDetails from "../pages/user/StationDetails";
 import Booking from "../pages/user/Booking";
 import ProtectedRoute from "./ProtectedRoute";
-
+import MyBookings from "../pages/user/MyBookings";
 
 function AppRoutes() {
     return (
@@ -62,6 +62,11 @@ function AppRoutes() {
                     <Route
                         path="/booking"
                         element={<Booking/>}
+                    />
+
+                    <Route
+                        path="/my-bookings"
+                        element={<MyBookings />}
                     />
 
                 </Route>
