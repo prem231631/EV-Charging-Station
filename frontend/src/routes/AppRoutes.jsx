@@ -7,6 +7,7 @@ import NotFound from "../pages/public/NotFound";
 
 import Dashboard from "../pages/user/Dashboard";
 import AdminDashboard from "../pages/admin/AdminDashboard";
+import Stations from "../pages/user/Stations";
 
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -45,6 +46,11 @@ function AppRoutes() {
                     <Route
                         path="/dashboard"
                         element={<Dashboard />}
+                    />
+
+                    <Route
+                        path="/stations"
+                        element={<Stations />}
                     />
 
                 </Route>
