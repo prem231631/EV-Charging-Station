@@ -2,7 +2,7 @@ import api from "./api";
 
 
 // ========================================
-// REGISTER USER
+// REGISTER
 // ========================================
 
 export async function registerUser(userData) {
@@ -25,7 +25,7 @@ export async function registerUser(userData) {
 
 
 // ========================================
-// LOGIN USER
+// LOGIN
 // ========================================
 
 export async function loginUser(credentials) {
@@ -41,6 +41,28 @@ export async function loginUser(credentials) {
         const message =
             error.response?.data?.detail ||
             "Login failed. Please check your email and password.";
+
+        throw new Error(message);
+    }
+}
+
+
+// ========================================
+// CURRENT USER
+// ========================================
+
+export async function getCurrentUser() {
+    try {
+        const response = await api.get(
+            "/api/auth/me"
+        );
+
+        return response.data;
+
+    } catch (error) {
+        const message =
+            error.response?.data?.detail ||
+            "Unable to get current user.";
 
         throw new Error(message);
     }
