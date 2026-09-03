@@ -7,6 +7,7 @@ from app.models import User, Vehicle, Station, Charger
 
 from app.api.stations import router as stations_router
 from app.api.auth import router as auth_router
+from app.api.bookings import router as bookings_router
 
 app = FastAPI(
     title="EV Charging Station API",
@@ -27,6 +28,7 @@ app.add_middleware(
 
 app.include_router(stations_router)
 app.include_router(auth_router)
+app.include_router(bookings_router)
 
 
 @app.on_event("startup")
