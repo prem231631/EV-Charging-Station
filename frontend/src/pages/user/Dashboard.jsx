@@ -354,7 +354,7 @@ function Dashboard() {
                             </p>
 
                             <button
-                                onClick={() => navigate("/bookings")}
+                                onClick={() => navigate("/my-bookings")}
                             >
                                 View Bookings
                                 <span>→</span>
