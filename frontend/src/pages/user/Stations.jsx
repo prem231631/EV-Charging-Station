@@ -183,8 +183,8 @@ function Stations() {
                             )}
 
 
-                            <button
-                                className="station-button"
+                            <button className="station-button"
+                                onClick={()=>navigate(`/stations/${station.id}`)}
                             >
                                 View Station
                                 <span>→</span>
