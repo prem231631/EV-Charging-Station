@@ -8,6 +8,7 @@ import NotFound from "../pages/public/NotFound";
 import Dashboard from "../pages/user/Dashboard";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import Stations from "../pages/user/Stations";
+import StationDetails from "../pages/user/StationDetails";
 
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -51,6 +52,11 @@ function AppRoutes() {
                     <Route
                         path="/stations"
                         element={<Stations />}
+                    />
+
+                    <Route
+                        path="/stations/:id"
+                        element={<StationDetails />}
                     />
 
                 </Route>
