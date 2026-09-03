@@ -364,16 +364,15 @@ function StationDetails() {
 
                             <button
                                 className="book-button"
-                                disabled={totalChargers === 0}
-                                onClick={() =>
-                                    navigate(
-                                        `/booking/${station.id}`
-                                    )
+                                onClick={()=>
+                                    navigate("/booking", {
+                                        state: {
+                                            station: station,
+                                        },
+                                    })
                                 }
                             >
-                                {totalChargers === 0
-                                    ? "No Charger Available"
-                                    : "Book a Charger →"}
+                                Reserve Now →
                             </button>
 
                         </div>
