@@ -1,0 +1,373 @@
+.stations-page {
+    min-height: 100vh;
+
+    padding: 40px 5%;
+
+    background:
+        var(--background-color, #f7f9f8);
+
+    color:
+        var(--text-color, #17201b);
+}
+
+
+/* HEADER */
+
+.stations-header {
+    max-width: 1200px;
+
+    margin: 0 auto 35px;
+}
+
+
+.back-button {
+    margin-bottom: 25px;
+
+    padding: 9px 15px;
+
+    border: 1px solid
+        var(--border-color, #e2e8e4);
+
+    border-radius: 8px;
+
+    background:
+        var(--card-background, white);
+
+    color: inherit;
+
+    cursor: pointer;
+
+    font-size: 12px;
+}
+
+
+.back-button:hover {
+    border-color: #16a34a;
+
+    color: #16a34a;
+}
+
+
+.stations-label {
+    color: #16a34a;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: 1.2px;
+}
+
+
+.stations-header h1 {
+    margin: 7px 0;
+
+    font-size: 34px;
+
+    letter-spacing: -0.8px;
+}
+
+
+.stations-header p {
+    margin: 0;
+
+    opacity: 0.6;
+
+    font-size: 13px;
+}
+
+
+/* GRID */
+
+.stations-grid {
+    max-width: 1200px;
+
+    margin: 0 auto;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 20px;
+}
+
+
+/* CARD */
+
+.station-card {
+    padding: 24px;
+
+    background:
+        var(--card-background, #ffffff);
+
+    border: 1px solid
+        var(--border-color, #e3e9e5);
+
+    border-radius: 16px;
+
+    transition: 0.25s ease;
+}
+
+
+.station-card:hover {
+    transform: translateY(-4px);
+
+    box-shadow:
+        0 15px 35px rgba(0, 0, 0, 0.08);
+}
+
+
+.station-card-top {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+}
+
+
+.station-icon {
+    width: 46px;
+    height: 46px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 12px;
+
+    background: #dcfce7;
+
+    font-size: 21px;
+}
+
+
+.station-status {
+    padding: 5px 9px;
+
+    border-radius: 20px;
+
+    background: #dcfce7;
+
+    color: #15803d;
+
+    font-size: 9px;
+
+    font-weight: 700;
+}
+
+.station-status.available {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.station-status.unavailable {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+
+.station-card h2 {
+    margin: 20px 0 6px;
+
+    font-size: 18px;
+}
+
+
+.station-location {
+    margin: 0;
+
+    font-size: 12px;
+
+    opacity: 0.58;
+}
+
+
+/* DETAILS */
+
+.station-details {
+    margin-top: 22px;
+
+    padding-top: 18px;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 8px;
+
+    border-top: 1px solid
+        var(--border-color, #e7ebe8);
+}
+
+
+.station-details div {
+    text-align: center;
+}
+
+
+.station-details span {
+    display: block;
+
+    font-size: 9px;
+
+    opacity: 0.5;
+}
+
+
+.station-details strong {
+    display: block;
+
+    margin-top: 4px;
+
+    font-size: 13px;
+}
+
+
+.station-price {
+    margin-top: 18px;
+
+    padding: 10px;
+
+    border-radius: 8px;
+
+    background:
+        var(--background-color, #f5f7f6);
+
+    font-size: 11px;
+
+    font-weight: 600;
+}
+
+
+.station-button {
+    width: 100%;
+
+    margin-top: 18px;
+
+    padding: 11px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 8px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background: #16a34a;
+
+    color: white;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+.station-button:hover {
+    background: #15803d;
+}
+
+
+/* LOADING */
+
+.stations-loading {
+    max-width: 1200px;
+
+    margin: 80px auto;
+
+    text-align: center;
+
+    opacity: 0.6;
+}
+
+
+/* ERROR */
+
+.stations-error {
+    max-width: 600px;
+
+    margin: 50px auto;
+
+    padding: 20px;
+
+    text-align: center;
+
+    border-radius: 10px;
+
+    background: #fee2e2;
+
+    color: #b91c1c;
+
+    font-size: 13px;
+}
+
+
+/* EMPTY */
+
+.no-stations {
+    max-width: 500px;
+
+    margin: 80px auto;
+
+    text-align: center;
+}
+
+
+.no-stations div {
+    font-size: 45px;
+}
+
+
+.no-stations h2 {
+    margin: 15px 0 5px;
+}
+
+
+.no-stations p {
+    margin: 0;
+
+    opacity: 0.55;
+
+    font-size: 13px;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 950px) {
+
+    .stations-grid {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .stations-page {
+        padding: 25px 4%;
+    }
+
+    .stations-header h1 {
+        font-size: 28px;
+    }
+
+    .stations-grid {
+        grid-template-columns: 1fr;
+    }
+
+}

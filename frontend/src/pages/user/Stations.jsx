@@ -107,8 +107,16 @@ function Stations() {
                                     ⚡
                                 </div>
 
-                                <span className="station-status">
-                                    Available
+                                <span
+                                    className={`station-status ${
+                                        station.chargers?.length > 0
+                                            ? "available"
+                                            : "unavailable"
+                                    }`}
+                                >
+                                    {station.chargers?.length > 0
+                                        ? "Available"
+                                        : "No Charger"}
                                 </span>
 
                             </div>
