@@ -1,18 +1,50 @@
 from datetime import datetime
 
+import httpx
 from sqlalchemy.orm import Session
 
 from app.models import Station, Charger
-from app.services.open_charge_map import get_nepal_stations
+from app.core.config import settings
+
+
+OCM_API_URL = "https://api.openchargemap.io/v3/poi/"
 
 
 def parse_datetime(value: str | None) -> datetime | None:
     if not value:
         return None
 
-    return datetime.fromisoformat(
-        value.replace("Z", "+00:00")
-    )
+    try:
+        return datetime.fromisoformat(
+            value.replace("Z", "+00:00")
+        )
+    except (ValueError, TypeError):
+        return None
+
+
+def get_nepal_stations_sync(
+    max_results: int = 100,
+) -> list[dict]:
+
+    params = {
+        "output": "json",
+        "countrycode": "NP",
+        "maxresults": max_results,
+        "compact": "true",
+        "verbose": "false",
+        "key": settings.open_charge_map_api_key,
+    }
+
+    with httpx.Client(timeout=30.0) as client:
+
+        response = client.get(
+            OCM_API_URL,
+            params=params,
+        )
+
+        response.raise_for_status()
+
+        return response.json()
 
 
 def sync_nepal_stations(
@@ -38,6 +70,13 @@ def sync_nepal_stations(
 
         address = data.get("AddressInfo") or {}
 
+        latitude = address.get("Latitude")
+        longitude = address.get("Longitude")
+
+        # OCM station must have coordinates
+        if latitude is None or longitude is None:
+            continue
+
         station = (
             db.query(Station)
             .filter(
@@ -50,6 +89,12 @@ def sync_nepal_stations(
 
             station = Station(
                 external_id=external_id,
+                name=(
+                    address.get("Title")
+                    or "Unnamed Charging Station"
+                ),
+                latitude=latitude,
+                longitude=longitude,
             )
 
             db.add(station)
@@ -57,11 +102,12 @@ def sync_nepal_stations(
             stations_created += 1
 
         else:
+
             stations_updated += 1
 
-        # --------------------------------------------------
-        # Basic station information
-        # --------------------------------------------------
+        # ---------------------------------------------
+        # BASIC INFORMATION
+        # ---------------------------------------------
 
         station.uuid = data.get("UUID")
 
@@ -69,6 +115,14 @@ def sync_nepal_stations(
             address.get("Title")
             or "Unnamed Charging Station"
         )
+
+        station.operator_name = (
+            data.get("OperatorInfo", {}) or {}
+        ).get("Title")
+
+        # ---------------------------------------------
+        # ADDRESS
+        # ---------------------------------------------
 
         station.address_line1 = address.get(
             "AddressLine1"
@@ -78,7 +132,9 @@ def sync_nepal_stations(
             "AddressLine2"
         )
 
-        station.city = address.get("Town")
+        station.city = address.get(
+            "Town"
+        )
 
         station.province = address.get(
             "StateOrProvince"
@@ -90,13 +146,12 @@ def sync_nepal_stations(
 
         station.country = "Nepal"
 
-        station.latitude = address.get(
-            "Latitude"
-        )
+        station.latitude = latitude
+        station.longitude = longitude
 
-        station.longitude = address.get(
-            "Longitude"
-        )
+        # ---------------------------------------------
+        # CONTACT
+        # ---------------------------------------------
 
         station.contact_telephone = address.get(
             "ContactTelephone1"
@@ -110,9 +165,9 @@ def sync_nepal_stations(
             "GeneralComments"
         )
 
-        # --------------------------------------------------
-        # Usage information
-        # --------------------------------------------------
+        # ---------------------------------------------
+        # USAGE
+        # ---------------------------------------------
 
         station.usage_type_id = data.get(
             "UsageTypeID"
@@ -126,9 +181,9 @@ def sync_nepal_stations(
             "NumberOfPoints"
         )
 
-        # --------------------------------------------------
-        # Status information
-        # --------------------------------------------------
+        # ---------------------------------------------
+        # STATUS
+        # ---------------------------------------------
 
         station.status_type_id = data.get(
             "StatusTypeID"
@@ -150,19 +205,21 @@ def sync_nepal_stations(
             "DataQualityLevel"
         )
 
-        # --------------------------------------------------
-        # Preserve original API response
-        # --------------------------------------------------
+        # ---------------------------------------------
+        # RAW OCM DATA
+        # ---------------------------------------------
 
         station.raw_data = data
 
         db.flush()
 
-        # --------------------------------------------------
-        # Chargers
-        # --------------------------------------------------
+        # ---------------------------------------------
+        # CHARGERS
+        # ---------------------------------------------
 
-        connections = data.get("Connections") or []
+        connections = data.get(
+            "Connections"
+        ) or []
 
         for connection in connections:
 
@@ -192,24 +249,33 @@ def sync_nepal_stations(
                 chargers_created += 1
 
             else:
+
                 chargers_updated += 1
 
             charger.station_id = station.id
 
-            charger.connection_type_id = connection.get(
-                "ConnectionTypeID"
+            charger.connection_type_id = (
+                connection.get(
+                    "ConnectionTypeID"
+                )
             )
 
-            charger.status_type_id = connection.get(
-                "StatusTypeID"
+            charger.status_type_id = (
+                connection.get(
+                    "StatusTypeID"
+                )
             )
 
-            charger.level_id = connection.get(
-                "LevelID"
+            charger.level_id = (
+                connection.get(
+                    "LevelID"
+                )
             )
 
-            charger.current_type_id = connection.get(
-                "CurrentTypeID"
+            charger.current_type_id = (
+                connection.get(
+                    "CurrentTypeID"
+                )
             )
 
             charger.amps = connection.get(
@@ -243,35 +309,3 @@ def sync_nepal_stations(
             external_stations
         ),
     }
-
-
-def get_nepal_stations_sync(
-    max_results: int = 100,
-) -> list[dict]:
-
-    import httpx
-
-    from app.core.config import settings
-
-    url = (
-        "https://api.openchargemap.io/v3/poi/"
-    )
-
-    params = {
-        "output": "json",
-        "countrycode": "NP",
-        "maxresults": max_results,
-        "compact": "true",
-        "verbose": "false",
-        "key": settings.open_charge_map_api_key,
-    }
-
-    response = httpx.get(
-        url,
-        params=params,
-        timeout=30,
-    )
-
-    response.raise_for_status()
-
-    return response.json()
