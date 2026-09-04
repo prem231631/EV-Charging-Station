@@ -9,4 +9,5 @@ __all__ = [
     "Vehicle",
     "Station",
     "Charger",
+    "Booking",
 ]
