@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -42,13 +42,14 @@ def create_booking(
             detail="Charging station not found.",
         )
 
-    # Calculate booking end time
+    
+
+    # Calculate booking start time
     booking_start = data.booking_date
 
-    booking_end = (
-        booking_start
-        + timedelta(minutes=data.duration_minutes)
-    )
+# Make the datetime timezone-aware
+    if booking_start.tzinfo is None:
+        booking_start = booking_start.replace(tzinfo=timezone.utc)
 
     # Check for overlapping active bookings
     existing_bookings = (
@@ -64,9 +65,11 @@ def create_booking(
 
         existing_start = existing.booking_date
 
-        existing_end = (
-            existing_start
-            + timedelta(
+        if existing_start.tzinfo is None:
+            existing_start = existing_start.replace(tzinfo=timezone.utc)
+
+        existing_end =(
+            existing_start + timedelta(
                 minutes=existing.duration_minutes
             )
         )

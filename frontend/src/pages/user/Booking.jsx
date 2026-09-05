@@ -49,58 +49,43 @@ function Booking() {
 
 
     async function handleSubmit(event) {
+    event.preventDefault();
 
-        event.preventDefault();
+    setError("");
+    setSuccess("");
+    setLoading(true);
 
-        setError("");
-        setSuccess("");
-        setLoading(true);
+    try {
+        const response = await api.post(
+            "/api/bookings",
+            {
+                station_id: station.id,
+                booking_date: bookingDate,
+                duration_minutes: Number(duration),
+                notes: notes || null,
+            }
+        );
 
-        try {
+        console.log("Booking created:", response.data);
 
-            const response = await api.post(
-                "/api/bookings",
-                {
-                    station_id: station.id,
-                    booking_date: bookingDate,
-                    duration_minutes: Number(duration),
-                    notes: notes || null,
-                },
-                {
-                    headers: {
-                        Authorization:
-                            `Bearer ${localStorage.getItem("token")}`,
-                    },
-                }
-            );
+        setSuccess("Booking confirmed successfully!");
 
+        setTimeout(() => {
+            navigate("/dashboard");
+        }, 1500);
 
-            setSuccess(
-                "Booking confirmed successfully!"
-            );
+    } catch (err) {
+        console.error("Booking error:", err);
 
+        setError(
+            err.response?.data?.detail ||
+            "Unable to create booking."
+        );
 
-            setTimeout(() => {
-
-                navigate("/dashboard");
-
-            }, 1500);
-
-
-        } catch (err) {
-
-            setError(
-                err.response?.data?.detail ||
-                "Unable to create booking."
-            );
-
-        } finally {
-
-            setLoading(false);
-
-        }
+    } finally {
+        setLoading(false);
     }
-
+}
 
     return (
 
