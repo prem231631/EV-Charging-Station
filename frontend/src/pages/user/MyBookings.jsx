@@ -16,7 +16,7 @@ function MyBookings() {
 
 
     // =========================================================
-    // LOAD BOOKINGS FROM FASTAPI
+    // LOAD MY BOOKINGS FROM FASTAPI
     // =========================================================
 
     useEffect(() => {
@@ -41,10 +41,11 @@ function MyBookings() {
                     err
                 );
 
-                setError(
+                const message =
                     err.response?.data?.detail ||
-                    "Failed to load your bookings."
-                );
+                    "Failed to load your bookings.";
+
+                setError(message);
 
             } finally {
 
@@ -114,16 +115,13 @@ function MyBookings() {
         const normalizedStatus =
             String(status || "confirmed").toLowerCase();
 
-
         if (normalizedStatus === "cancelled") {
             return "status-cancelled";
         }
 
-
         if (normalizedStatus === "completed") {
             return "status-completed";
         }
-
 
         return "status-confirmed";
     }
@@ -138,16 +136,13 @@ function MyBookings() {
         const normalizedStatus =
             String(status || "confirmed").toLowerCase();
 
-
         if (normalizedStatus === "cancelled") {
             return "Cancelled";
         }
 
-
         if (normalizedStatus === "completed") {
             return "Completed";
         }
-
 
         return "Confirmed";
     }
@@ -194,9 +189,7 @@ function MyBookings() {
 
                 <button
                     className="bookings-back-button"
-                    onClick={() =>
-                        navigate("/dashboard")
-                    }
+                    onClick={() => navigate("/dashboard")}
                 >
                     ← Dashboard
                 </button>
@@ -215,8 +208,8 @@ function MyBookings() {
                     </h1>
 
                     <p>
-                        View and manage your charging
-                        station reservations.
+                        View and manage your charging station
+                        reservations.
                     </p>
 
                 </header>
@@ -227,9 +220,7 @@ function MyBookings() {
                 {error && (
 
                     <div className="booking-error">
-
                         {error}
-
                     </div>
 
                 )}
@@ -271,143 +262,160 @@ function MyBookings() {
                        BOOKINGS LIST
                        ================================================= */
 
-                    <div className="bookings-list">
+                    !error && (
 
-                        {bookings.map((booking) => (
+                        <div className="bookings-list">
 
-                            <div
-                                className="booking-item"
-                                key={booking.id}
-                            >
+                            {bookings.map((booking) => (
 
-
-                                {/* Booking Top */}
-
-                                <div className="booking-item-top">
+                                <div
+                                    className="booking-item"
+                                    key={booking.id}
+                                >
 
 
-                                    {/* Station Information */}
+                                    {/* ============================
+                                        BOOKING TOP
+                                        ============================ */}
 
-                                    <div className="booking-station-info">
+                                    <div className="booking-item-top">
 
-                                        <div className="booking-icon">
-                                            ⚡
+
+                                        <div className="booking-station-info">
+
+
+                                            <div className="booking-icon">
+                                                ⚡
+                                            </div>
+
+
+                                            <div>
+
+                                                <h2>
+                                                    {booking.station?.name ||
+                                                        booking.station_name ||
+                                                        "Charging Station"}
+                                                </h2>
+
+
+                                                <p>
+
+                                                    📍{" "}
+
+                                                    {booking.station?.city ||
+                                                        booking.location ||
+                                                        booking.station_location ||
+                                                        "Nepal"}
+
+                                                    {booking.station?.province
+                                                        ? `, ${booking.station.province}`
+                                                        : ""}
+
+                                                </p>
+
+                                            </div>
+
                                         </div>
 
-                                        <div>
 
-                                            <h2>
-                                                Charging Station
-                                            </h2>
+                                        <span
+                                            className={`booking-status ${getStatusClass(
+                                                booking.status
+                                            )}`}
+                                        >
+
+                                            {getStatusText(
+                                                booking.status
+                                            )}
+
+                                        </span>
+
+                                    </div>
+
+
+                                    {/* ============================
+                                        BOOKING DETAILS
+                                        ============================ */}
+
+                                    <div className="booking-details">
+
+
+                                        <div className="booking-detail">
+
+                                            <span>
+                                                Date
+                                            </span>
+
+                                            <strong>
+                                                {formatDate(
+                                                    booking.booking_date
+                                                )}
+                                            </strong>
+
+                                        </div>
+
+
+                                        <div className="booking-detail">
+
+                                            <span>
+                                                Time
+                                            </span>
+
+                                            <strong>
+                                                {formatTime(
+                                                    booking.booking_date
+                                                )}
+                                            </strong>
+
+                                        </div>
+
+
+                                        <div className="booking-detail">
+
+                                            <span>
+                                                Duration
+                                            </span>
+
+                                            <strong>
+                                                {booking.duration_minutes}
+                                                {" "}
+                                                minutes
+                                            </strong>
+
+                                        </div>
+
+
+                                    </div>
+
+
+                                    {/* ============================
+                                        NOTES
+                                        ============================ */}
+
+                                    {booking.notes && (
+
+                                        <div className="booking-notes">
+
+                                            <span>
+                                                Additional Notes
+                                            </span>
 
                                             <p>
-                                                📍 Station ID:{" "}
-                                                {booking.station_id}
+                                                {booking.notes}
                                             </p>
 
                                         </div>
 
-                                    </div>
-
-
-                                    {/* Status */}
-
-                                    <span
-                                        className={`booking-status ${getStatusClass(
-                                            booking.status
-                                        )}`}
-                                    >
-                                        {getStatusText(
-                                            booking.status
-                                        )}
-                                    </span>
-
-                                </div>
-
-
-                                {/* Booking Details */}
-
-                                <div className="booking-details">
-
-
-                                    {/* Date */}
-
-                                    <div className="booking-detail">
-
-                                        <span>
-                                            Date
-                                        </span>
-
-                                        <strong>
-                                            {formatDate(
-                                                booking.booking_date
-                                            )}
-                                        </strong>
-
-                                    </div>
-
-
-                                    {/* Time */}
-
-                                    <div className="booking-detail">
-
-                                        <span>
-                                            Time
-                                        </span>
-
-                                        <strong>
-                                            {formatTime(
-                                                booking.booking_date
-                                            )}
-                                        </strong>
-
-                                    </div>
-
-
-                                    {/* Duration */}
-
-                                    <div className="booking-detail">
-
-                                        <span>
-                                            Duration
-                                        </span>
-
-                                        <strong>
-                                            {booking.duration_minutes
-                                                ? `${booking.duration_minutes} minutes`
-                                                : "30 minutes"}
-                                        </strong>
-
-                                    </div>
+                                    )}
 
 
                                 </div>
 
+                            ))}
 
-                                {/* Notes */}
+                        </div>
 
-                                {booking.notes && (
-
-                                    <div className="booking-notes">
-
-                                        <span>
-                                            Additional Notes
-                                        </span>
-
-                                        <p>
-                                            {booking.notes}
-                                        </p>
-
-                                    </div>
-
-                                )}
-
-
-                            </div>
-
-                        ))}
-
-                    </div>
+                    )
 
                 )}
 
