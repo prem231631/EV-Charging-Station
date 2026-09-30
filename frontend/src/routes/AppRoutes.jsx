@@ -14,6 +14,8 @@ import ProtectedRoute from "./ProtectedRoute";
 import MyBookings from "../pages/user/MyBookings";
 import Vehicles from "../pages/user/Vehicles";
 import Profile from "../pages/user/Profile";
+import AdminDashboard from "../pages/admin/AdminDashboard";
+
 function AppRoutes() {
     return (
         <BrowserRouter>
@@ -88,7 +90,7 @@ function AppRoutes() {
                 ================================= */}
 
                 <Route
-                    path="/admin"
+                    path="/admin/dashboard"
                     element={<AdminDashboard />}
                 />
 
