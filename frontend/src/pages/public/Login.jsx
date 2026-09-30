@@ -43,7 +43,12 @@ function Login() {
             }
 
             // Go to dashboard after successful login
-            navigate("/dashboard");
+            localStorage.setItem("access_token", response.access_token);
+            if(response.user.role==="admin"){
+                navigate("/admin/dashboard");
+            } else {
+                navigate("/dashboard");
+            }
 
         } catch (err) {
             setError(
