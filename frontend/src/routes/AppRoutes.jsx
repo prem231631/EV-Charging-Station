@@ -13,7 +13,7 @@ import Booking from "../pages/user/Booking";
 import ProtectedRoute from "./ProtectedRoute";
 import MyBookings from "../pages/user/MyBookings";
 import Vehicles from "../pages/user/Vehicles";
-
+import Profile from "../pages/user/Profile";
 function AppRoutes() {
     return (
         <BrowserRouter>
@@ -73,6 +73,11 @@ function AppRoutes() {
                     <Route
                         path="/vehicles"
                         element={<Vehicles />}
+                    />
+
+                    <Route
+                        path="/profile"
+                        element={<Profile />}
                     />
 
                 </Route>
