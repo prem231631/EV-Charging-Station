@@ -443,17 +443,26 @@ function MyBookings() {
 
                                     )}
 
+                                    {String(booking.status).toLowerCase() === "confirmed" && (
+                                        <div className="booking-actions">
 
+                                            <button
+                                                className="cancel-booking-button"
+                                                onClick={() => handleCancelBooking(booking.id)}
+                                                disabled={cancellingId === booking.id}
+                                            >
+                                                {cancellingId === booking.id
+                                                ? "Cancelling..."
+                                                    : "Cancel Booking"}
+                                            </button>
+
+                                        </div>
+                                    )}
                                 </div>
-
                             ))}
-
                         </div>
-
                     )
-
                 )}
-
             </div>
 
         </div>
