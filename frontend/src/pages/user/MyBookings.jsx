@@ -443,7 +443,7 @@ function MyBookings() {
 
                                     )}
 
-                                    {String(booking.status).toLowerCase() === "confirmed" && (
+                                    {String(booking.status).toLowerCase() === "confirmed" && new Date(booking.booking_date)> new Date() && (
                                         <div className="booking-actions">
 
                                             <button
