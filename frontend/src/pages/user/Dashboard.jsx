@@ -200,9 +200,14 @@ function Dashboard() {
 
                     {/* User */}
 
-                    <div className="nav-user">
+                    <div
+                        className="nav-user"
+                        onClick={() =>
+                            navigate("/profile")
+                        }
+                    >
 
-                        <div className="nav-user-avatar">
+                        <div className="nav-user-avatar" >
 
                             {user?.full_name
                                 ?.charAt(0)

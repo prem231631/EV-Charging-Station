@@ -167,6 +167,12 @@
     gap: 10px;
 }
 
+.nav-user:hover {
+    cursor: pointer;
+    border-color: var(--color-primary);
+    transform: translateY(-1px);
+}
+
 
 .nav-user-avatar {
     width: 39px;
