@@ -13,6 +13,7 @@ function MyBookings() {
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const[cancellingId, setCancellingId] = useState(null);
 
 
     // =========================================================
@@ -57,6 +58,40 @@ function MyBookings() {
         loadBookings();
 
     }, []);
+
+    async function handleCancelBooking(bookingId) {
+        const confirmed = window.confirm(
+            "Are you sure you want to cancel this booking?"
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            setCancellingId(bookingId);
+            setError("");
+
+            await api.delete(`/api/bookings/${bookingId}`);
+
+            // Reload bookings after cancellation
+            const response = await api.get("/api/bookings/my");
+
+            setBookings(response.data);
+
+        } catch (err) {
+            console.error("Failed to cancel booking:", err);
+
+            const message =
+                err.response?.data?.detail ||
+                "Failed to cancel the booking.";
+
+            setError(message);
+
+        } finally {
+            setCancellingId(null);
+        }
+    }
 
 
     // =========================================================
