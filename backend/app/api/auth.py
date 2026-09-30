@@ -17,7 +17,13 @@ from app.core.security import (
     decode_access_token,
     create_password_reset_token,
     decode_password_reset_token,
+    VerifyOTPRequest,
 )
+
+import hashlib
+import secrets
+from datetime import datetime, timedelta, timezone
+from app.core.email import send_otp_email
 
 
 router = APIRouter(
@@ -353,29 +359,51 @@ def forgot_password(
         .first()
     )
 
-    # Don't reveal whether an email exists.
+    # Do not reveal whether the email exists.
     if not user:
         return {
             "message": (
                 "If an account exists with this email, "
-                "a password reset link has been generated."
+                "a password reset OTP has been sent."
             )
         }
 
-    token = create_password_reset_token(user.email)
+    # Generate a secure 6-digit OTP.
+    otp = f"{secrets.randbelow(1_000_000):06d}"
 
-    # Development/testing only.
-    # Later we can send this link through email.
-    reset_link = (
-        f"http://localhost:5173/reset-password?token={token}"
+    # Store only the hash.
+    otp_hash = hashlib.sha256(
+        otp.encode()
+    ).hexdigest()
+
+    user.password_reset_otp_hash = otp_hash
+
+    user.password_reset_otp_expires_at = (
+        datetime.now(timezone.utc)
+        + timedelta(minutes=10)
     )
+
+    db.commit()
+
+    try:
+        send_otp_email(
+            user.email,
+            otp,
+        )
+    except Exception:
+        # Remove OTP if email sending fails.
+        user.password_reset_otp_hash = None
+        user.password_reset_otp_expires_at = None
+        db.commit()
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to send OTP email. Please try again later.",
+        )
 
     return {
         "message": (
             "If an account exists with this email, "
-            "a password reset link has been generated."
-        ),
-        "reset_link": reset_link,
+            "a password reset OTP has been sent."
+        )
     }
-
-        
