@@ -15,7 +15,7 @@ import Vehicles from "../pages/user/Vehicles";
 import Profile from "../pages/user/Profile";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import ForgotPassword from "../pages/public/ForgotPassword";
-import ResetPassword from "../pages/public/ResetPassword";
+
 
 function AppRoutes() {
     return (
@@ -46,10 +46,6 @@ function AppRoutes() {
                     element={<ForgotPassword />}
                 />
 
-                <Route
-                    path="/reset-password"
-                    element={<ResetPassword />}
-                />
 
 
                 {/* ================================
