@@ -52,6 +52,16 @@ class User(Base):
         nullable=False,
     )
 
+    password_reset_otp_hash: Mapped[str | None] = mapped_column(
+        String(64),
+        nullable=True,
+    )
+
+    password_reset_otp_expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
