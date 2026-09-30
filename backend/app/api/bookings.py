@@ -1,4 +1,4 @@
-from datetime import timedelta, timedelta, timezone
+from datetime import timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -18,6 +18,50 @@ router = APIRouter(
 )
 
 
+def update_completed_bookings(db: Session):
+    """
+    Automatically mark confirmed bookings as completed
+    when their booking time has finished.
+    """
+
+    now = datetime_now_utc()
+
+    bookings = (
+        db.query(Booking)
+        .filter(Booking.status == "confirmed")
+        .all()
+    )
+
+    changed = False
+
+    for booking in bookings:
+
+        booking_start = booking.booking_date
+
+        if booking_start.tzinfo is None:
+            booking_start = booking_start.replace(tzinfo=timezone.utc)
+
+        booking_end = booking_start + timedelta(
+            minutes=booking.duration_minutes
+        )
+
+        if now >= booking_end:
+            booking.status = "completed"
+            changed = True
+
+    if changed:
+        db.commit()
+
+
+def datetime_now_utc():
+    """
+    Return current UTC datetime.
+    """
+    from datetime import datetime
+
+    return datetime.now(timezone.utc)
+
+
 @router.post(
     "",
     response_model=BookingResponse,
@@ -28,6 +72,9 @@ def create_booking(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
+
+    # First update any bookings that have already finished.
+    update_completed_bookings(db)
 
     # Check whether station exists
     station = (
@@ -42,14 +89,18 @@ def create_booking(
             detail="Charging station not found.",
         )
 
-    
-
     # Calculate booking start time
     booking_start = data.booking_date
 
-# Make the datetime timezone-aware
     if booking_start.tzinfo is None:
-        booking_start = booking_start.replace(tzinfo=timezone.utc)
+        booking_start = booking_start.replace(
+            tzinfo=timezone.utc
+        )
+
+    # Calculate booking end time
+    booking_end = booking_start + timedelta(
+        minutes=data.duration_minutes
+    )
 
     # Check for overlapping active bookings
     existing_bookings = (
@@ -66,15 +117,15 @@ def create_booking(
         existing_start = existing.booking_date
 
         if existing_start.tzinfo is None:
-            existing_start = existing_start.replace(tzinfo=timezone.utc)
-
-        existing_end =(
-            existing_start + timedelta(
-                minutes=existing.duration_minutes
+            existing_start = existing_start.replace(
+                tzinfo=timezone.utc
             )
+
+        existing_end = existing_start + timedelta(
+            minutes=existing.duration_minutes
         )
 
-        # Check overlap
+        # Check whether the two bookings overlap
         if (
             booking_start < existing_end
             and booking_end > existing_start
@@ -113,6 +164,9 @@ def get_my_bookings(
     current_user=Depends(get_current_user),
 ):
 
+    # Automatically complete finished bookings
+    update_completed_bookings(db)
+
     bookings = (
         db.query(Booking)
         .filter(
@@ -136,6 +190,9 @@ def get_booking(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
+
+    # Automatically complete finished bookings
+    update_completed_bookings(db)
 
     booking = (
         db.query(Booking)
@@ -164,6 +221,9 @@ def cancel_booking(
     current_user=Depends(get_current_user),
 ):
 
+    # Update completed bookings first
+    update_completed_bookings(db)
+
     booking = (
         db.query(Booking)
         .filter(
@@ -179,16 +239,44 @@ def cancel_booking(
             detail="Booking not found.",
         )
 
+    # Already cancelled
     if booking.status == "cancelled":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Booking is already cancelled.",
         )
 
+    # Already completed
+    if booking.status == "completed":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Completed bookings cannot be cancelled.",
+        )
+
+    # Check whether booking has already started
+    booking_start = booking.booking_date
+
+    if booking_start.tzinfo is None:
+        booking_start = booking_start.replace(
+            tzinfo=timezone.utc
+        )
+
+    now = datetime_now_utc()
+
+    if now >= booking_start:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Bookings cannot be cancelled after they have started.",
+        )
+
+    # Cancel booking
     booking.status = "cancelled"
 
     db.commit()
+    db.refresh(booking)
 
     return {
-        "message": "Booking cancelled successfully."
+        "message": "Booking cancelled successfully.",
+        "booking_id": booking.id,
+        "status": booking.status,
     }
