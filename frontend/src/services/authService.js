@@ -84,3 +84,20 @@ export async function getCurrentUser() {
         throw new Error(message);
     }
 }
+
+export async function updateProfile(profileData) {
+    try {
+        const response = await api.put(
+            "/api/auth/me",
+            profileData
+        );
+
+        return response.data;
+    } catch (error) {
+        const message =
+            error.response?.data?.detail ||
+            "Failed to update profile.";
+
+        throw new Error(message);
+    }
+}
