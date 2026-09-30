@@ -8,6 +8,7 @@ from app.schemas.auth import (
     RegisterRequest,
     LoginRequest,
     UserResponse,
+    ProfileUpdateRequest,
 )
 from app.core.security import (
     hash_password,
@@ -194,5 +195,87 @@ def get_current_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Your account is inactive.",
         )
+
+    return user
+
+# =========================================================
+# UPDATE PROFILE
+# =========================================================
+
+@router.put(
+    "/me",
+    response_model=UserResponse,
+)
+def update_profile(
+    data: ProfileUpdateRequest,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),
+):
+    token = credentials.credentials
+
+    payload = decode_access_token(token)
+
+    if not payload:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token.",
+        )
+
+    user_id = payload.get("sub")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token.",
+        )
+
+    try:
+        user_id = int(user_id)
+    except (TypeError, ValueError):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token.",
+        )
+
+    user = (
+        db.query(User)
+        .filter(User.id == user_id)
+        .first()
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found.",
+        )
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your account is inactive.",
+        )
+
+    # Check whether the phone number belongs to another user
+    if data.phone:
+        existing_phone = (
+            db.query(User)
+            .filter(
+                User.phone == data.phone,
+                User.id != user.id,
+            )
+            .first()
+        )
+
+        if existing_phone:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Phone number is already registered.",
+            )
+
+    user.full_name = data.full_name.strip()
+    user.phone = data.phone.strip() if data.phone else None
+
+    db.commit()
+    db.refresh(user)
 
     return user
