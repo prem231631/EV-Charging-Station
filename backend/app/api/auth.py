@@ -15,6 +15,8 @@ from app.core.security import (
     verify_password,
     create_access_token,
     decode_access_token,
+    create_password_reset_token,
+    decode_password_reset_token,
 )
 
 
@@ -339,3 +341,73 @@ def get_current_admin(
         )
 
     return user
+
+@router.post("/forgot-password")
+def forgot_password(
+    data: ForgotPasswordRequest,
+    db: Session = Depends(get_db),
+):
+    user = (
+        db.query(User)
+        .filter(User.email == data.email.lower())
+        .first()
+    )
+
+    # Don't reveal whether an email exists.
+    if not user:
+        return {
+            "message": (
+                "If an account exists with this email, "
+                "a password reset link has been generated."
+            )
+        }
+
+    token = create_password_reset_token(user.email)
+
+    # Development/testing only.
+    # Later we can send this link through email.
+    reset_link = (
+        f"http://localhost:5173/reset-password?token={token}"
+    )
+
+    return {
+        "message": (
+            "If an account exists with this email, "
+            "a password reset link has been generated."
+        ),
+        "reset_link": reset_link,
+    }
+
+
+@router.post("/reset-password")
+def reset_password(
+    data: ResetPasswordRequest,
+    db: Session = Depends(get_db),
+):
+    email = decode_password_reset_token(data.token)
+
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired password reset link.",
+        )
+
+    user = (
+        db.query(User)
+        .filter(User.email == email.lower())
+        .first()
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User account not found.",
+        )
+
+    user.password_hash = hash_password(data.new_password)
+
+    db.commit()
+
+    return {
+        "message": "Password reset successfully. You can now log in."
+    }
