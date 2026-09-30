@@ -407,3 +407,74 @@ def forgot_password(
             "a password reset OTP has been sent."
         )
     }
+
+
+@router.post("/verify-otp")
+def verify_otp(
+    data: VerifyOTPRequest,
+    db: Session = Depends(get_db),
+):
+    user = (
+        db.query(User)
+        .filter(User.email == data.email.lower())
+        .first()
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid OTP or email.",
+        )
+
+    if not user.password_reset_otp_hash:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="OTP is invalid or has expired.",
+        )
+
+    if not user.password_reset_otp_expires_at:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="OTP is invalid or has expired.",
+        )
+
+    now = datetime.now(timezone.utc)
+
+    if now > user.password_reset_otp_expires_at:
+        user.password_reset_otp_hash = None
+        user.password_reset_otp_expires_at = None
+
+        db.commit()
+
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="OTP has expired. Please request a new OTP.",
+        )
+
+    entered_otp_hash = hashlib.sha256(
+        data.otp.encode()
+    ).hexdigest()
+
+    if entered_otp_hash != user.password_reset_otp_hash:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid OTP.",
+        )
+
+    # OTP is correct.
+    user.password_hash = hash_password(
+        data.new_password
+    )
+
+    # Make OTP unusable after successful reset.
+    user.password_reset_otp_hash = None
+    user.password_reset_otp_expires_at = None
+
+    db.commit()
+
+    return {
+        "message": (
+            "Password reset successfully. "
+            "You can now log in."
+        )
+    }
