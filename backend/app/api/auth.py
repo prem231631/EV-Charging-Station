@@ -378,36 +378,4 @@ def forgot_password(
         "reset_link": reset_link,
     }
 
-
-@router.post("/reset-password")
-def reset_password(
-    data: ResetPasswordRequest,
-    db: Session = Depends(get_db),
-):
-    email = decode_password_reset_token(data.token)
-
-    if not email:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid or expired password reset link.",
-        )
-
-    user = (
-        db.query(User)
-        .filter(User.email == email.lower())
-        .first()
-    )
-
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User account not found.",
-        )
-
-    user.password_hash = hash_password(data.new_password)
-
-    db.commit()
-
-    return {
-        "message": "Password reset successfully. You can now log in."
-    }
+        
