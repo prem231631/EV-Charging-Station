@@ -560,6 +560,35 @@
     box-shadow: var(--shadow-md);
 }
 
+.booking-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.cancel-booking-button {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    background: #dc2626;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.cancel-booking-button:hover {
+    background: #b91c1c;
+}
+
+.cancel-booking-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 
 /* =====================================================
    RESPONSIVE
