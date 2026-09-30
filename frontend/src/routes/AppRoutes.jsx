@@ -6,7 +6,6 @@ import Register from "../pages/public/Register";
 import NotFound from "../pages/public/NotFound";
 
 import Dashboard from "../pages/user/Dashboard";
-import AdminDashboard from "../pages/admin/AdminDashboard";
 import Stations from "../pages/user/Stations";
 import StationDetails from "../pages/user/StationDetails";
 import Booking from "../pages/user/Booking";
