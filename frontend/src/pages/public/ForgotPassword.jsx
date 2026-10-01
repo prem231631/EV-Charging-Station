@@ -1,97 +1,98 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import api from "../../services/api";
-
 import "../../styles/auth.css";
 
 function ForgotPassword() {
     const navigate = useNavigate();
 
     const [email, setEmail] = useState("");
-    const [message, setMessage] = useState("");
-    const [resetLink, setResetLink] = useState("");
-    const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
 
-    async function handleSubmit(event) {
-        event.preventDefault();
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
         setError("");
-        setMessage("");
-        setResetLink("");
+        setSuccess("");
+
+        if (!email.trim()) {
+            setError("Please enter your email address.");
+            return;
+        }
 
         try {
             setLoading(true);
 
-            const response = await api.post(
-                "/api/auth/forgot-password",
-                { email }
+            await api.post("/api/auth/forgot-password", {
+                email: email.trim(),
+            });
+
+            setSuccess(
+                "If an account exists with this email, an OTP has been sent."
             );
 
-            setMessage(response.data.message);
-
-            // Development only
-            if (response.data.reset_link) {
-                setResetLink(response.data.reset_link);
-            }
-
-        } catch (err) {
+            // Give the user a moment to see the success message
+            setTimeout(() => {
+                navigate("/reset-password", {
+                    state: {
+                        email: email.trim(),
+                    },
+                });
+            }, 800);
+        } catch (error) {
             setError(
-                err.response?.data?.detail ||
-                "Unable to process your request."
+                error.response?.data?.detail ||
+                    "Unable to send OTP. Please try again."
             );
         } finally {
             setLoading(false);
         }
-    }
+    };
 
     return (
         <div className="auth-page">
-
             <div className="auth-card">
 
                 <div className="auth-header">
-                    <span>EV CHARGING NETWORK</span>
-
                     <h1>Forgot Password?</h1>
-
                     <p>
-                        Enter your email address to reset your password.
+                        Enter your email address and we will send you
+                        an OTP to reset your password.
                     </p>
                 </div>
 
-                {error && (
-                    <div className="auth-error">
-                        {error}
-                    </div>
-                )}
+                <form onSubmit={handleSubmit} className="auth-form">
 
-                {message && (
-                    <div className="auth-success">
-                        {message}
-                    </div>
-                )}
+                    {error && (
+                        <div className="auth-error">
+                            {error}
+                        </div>
+                    )}
 
-                <form onSubmit={handleSubmit}>
+                    {success && (
+                        <div className="auth-success">
+                            {success}
+                        </div>
+                    )}
 
                     <div className="auth-form-group">
-
                         <label htmlFor="email">
-                            Email Address
+                            Email
                         </label>
 
                         <input
                             id="email"
                             type="email"
-                            value={email}
-                            onChange={(event) =>
-                                setEmail(event.target.value)
-                            }
                             placeholder="Enter your email"
+                            value={email}
+                            onChange={(e) =>
+                                setEmail(e.target.value)
+                            }
+                            disabled={loading}
                             required
                         />
-
                     </div>
 
                     <button
@@ -99,44 +100,21 @@ function ForgotPassword() {
                         className="auth-submit-button"
                         disabled={loading}
                     >
-                        {loading
-                            ? "Sending..."
-                            : "Reset Password"}
+                        {loading ? "Sending OTP..." : "Send OTP"}
                     </button>
 
                 </form>
 
-                {resetLink && (
-                    <div className="reset-link-box">
-
-                        <strong>
-                            Development Reset Link
-                        </strong>
-
-                        <p>
-                            Open this link to reset your password:
-                        </p>
-
-                        <a
-                            href={resetLink}
-                            className="reset-link"
-                        >
-                            Open Reset Password
-                        </a>
-
-                    </div>
-                )}
-
-                <button
-                    type="button"
-                    className="auth-back-button"
-                    onClick={() => navigate("/login")}
-                >
-                    ← Back to Login
-                </button>
+                <div className="auth-back-button">
+                    <button
+                        type="button"
+                        onClick={() => navigate("/login")}
+                    >
+                        ← Back to Login
+                    </button>
+                </div>
 
             </div>
-
         </div>
     );
 }
