@@ -33,6 +33,13 @@ function ForgotPassword() {
                 "OTP has been sent to your email address."
             );
 
+            const cooldownEnd= Date.now() + 60*1000;
+
+            sessionStorage.setItem(
+                `otp_resend_cooldown_${email.trim()}`,
+                cooldownEnd.toString()
+            );
+
             setTimeout(() => {
                 navigate("/reset-password", {
                     state: {
