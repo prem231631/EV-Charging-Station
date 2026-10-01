@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import api from "../../services/api";
-import "../../styles/auth.css";
+import "../../styles/resetPassword.css";
 
 function ResetPassword() {
     const navigate = useNavigate();
@@ -51,8 +51,8 @@ function ResetPassword() {
             setLoading(true);
 
             await api.post("/api/auth/verify-otp", {
-                email: email,
-                otp: otp,
+                email,
+                otp,
                 new_password: newPassword,
             });
 
@@ -73,15 +73,11 @@ function ResetPassword() {
         }
     };
 
-    const handleRequestNewOtp = () => {
-        navigate("/forgot-password");
-    };
-
     return (
-        <div className="auth-page">
-            <div className="auth-card">
+        <div className="reset-password-page">
+            <div className="reset-password-card">
 
-                <div className="auth-header">
+                <div className="reset-password-header">
                     <h1>Reset Password</h1>
 
                     <p>
@@ -90,30 +86,32 @@ function ResetPassword() {
                     </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="auth-form">
+                {error && (
+                    <div className="reset-password-error">
+                        {error}
+                    </div>
+                )}
 
-                    {error && (
-                        <div className="auth-error">
-                            {error}
-                        </div>
-                    )}
+                {success && (
+                    <div className="reset-password-success">
+                        {success}
+                    </div>
+                )}
 
-                    {success && (
-                        <div className="auth-success">
-                            {success}
-                        </div>
-                    )}
-
-                    <div className="auth-form-group">
-                        <label htmlFor="otp">
+                <form
+                    className="reset-password-form"
+                    onSubmit={handleSubmit}
+                >
+                    <div className="reset-password-form-group">
+                        <label htmlFor="reset-otp">
                             OTP
                         </label>
 
                         <input
-                            id="otp"
+                            id="reset-otp"
                             type="text"
                             inputMode="numeric"
-                            maxLength="6"
+                            maxLength={6}
                             placeholder="Enter 6-digit OTP"
                             value={otp}
                             onChange={(e) =>
@@ -129,13 +127,13 @@ function ResetPassword() {
                         />
                     </div>
 
-                    <div className="auth-form-group">
-                        <label htmlFor="newPassword">
+                    <div className="reset-password-form-group">
+                        <label htmlFor="new-password">
                             New Password
                         </label>
 
                         <input
-                            id="newPassword"
+                            id="new-password"
                             type="password"
                             placeholder="Enter new password"
                             value={newPassword}
@@ -147,13 +145,13 @@ function ResetPassword() {
                         />
                     </div>
 
-                    <div className="auth-form-group">
-                        <label htmlFor="confirmPassword">
+                    <div className="reset-password-form-group">
+                        <label htmlFor="confirm-password">
                             Confirm Password
                         </label>
 
                         <input
-                            id="confirmPassword"
+                            id="confirm-password"
                             type="password"
                             placeholder="Confirm new password"
                             value={confirmPassword}
@@ -167,21 +165,21 @@ function ResetPassword() {
 
                     <button
                         type="submit"
-                        className="auth-submit-button"
+                        className="reset-password-submit"
                         disabled={loading}
                     >
                         {loading
                             ? "Resetting Password..."
                             : "Reset Password"}
                     </button>
-
                 </form>
 
-                <div className="auth-secondary-actions">
-
+                <div className="reset-password-actions">
                     <button
                         type="button"
-                        onClick={handleRequestNewOtp}
+                        onClick={() =>
+                            navigate("/forgot-password")
+                        }
                         disabled={loading}
                     >
                         Didn't receive the OTP?
@@ -194,7 +192,6 @@ function ResetPassword() {
                     >
                         ← Back to Login
                     </button>
-
                 </div>
 
             </div>
