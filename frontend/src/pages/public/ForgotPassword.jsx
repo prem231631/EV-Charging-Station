@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
-import "../../styles/auth.css";
+import "../../styles/forgotPassword.css";
 
 function ForgotPassword() {
     const navigate = useNavigate();
@@ -30,10 +30,9 @@ function ForgotPassword() {
             });
 
             setSuccess(
-                "If an account exists with this email, an OTP has been sent."
+                "OTP has been sent to your email address."
             );
 
-            // Give the user a moment to see the success message
             setTimeout(() => {
                 navigate("/reset-password", {
                     state: {
@@ -52,38 +51,41 @@ function ForgotPassword() {
     };
 
     return (
-        <div className="auth-page">
-            <div className="auth-card">
+        <div className="forgot-password-page">
+            <div className="forgot-password-card">
 
-                <div className="auth-header">
+                <div className="forgot-password-header">
                     <h1>Forgot Password?</h1>
+
                     <p>
-                        Enter your email address and we will send you
-                        an OTP to reset your password.
+                        Enter your email address and we will send
+                        you an OTP to reset your password.
                     </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="auth-form">
+                {error && (
+                    <div className="forgot-password-error">
+                        {error}
+                    </div>
+                )}
 
-                    {error && (
-                        <div className="auth-error">
-                            {error}
-                        </div>
-                    )}
+                {success && (
+                    <div className="forgot-password-success">
+                        {success}
+                    </div>
+                )}
 
-                    {success && (
-                        <div className="auth-success">
-                            {success}
-                        </div>
-                    )}
-
-                    <div className="auth-form-group">
-                        <label htmlFor="email">
+                <form
+                    className="forgot-password-form"
+                    onSubmit={handleSubmit}
+                >
+                    <div className="forgot-password-form-group">
+                        <label htmlFor="forgot-email">
                             Email
                         </label>
 
                         <input
-                            id="email"
+                            id="forgot-email"
                             type="email"
                             placeholder="Enter your email"
                             value={email}
@@ -97,22 +99,20 @@ function ForgotPassword() {
 
                     <button
                         type="submit"
-                        className="auth-submit-button"
+                        className="forgot-password-submit"
                         disabled={loading}
                     >
                         {loading ? "Sending OTP..." : "Send OTP"}
                     </button>
-
                 </form>
 
-                <div className="auth-back-button">
-                    <button
-                        type="button"
-                        onClick={() => navigate("/login")}
-                    >
-                        ← Back to Login
-                    </button>
-                </div>
+                <button
+                    type="button"
+                    className="forgot-password-back"
+                    onClick={() => navigate("/login")}
+                >
+                    ← Back to Login
+                </button>
 
             </div>
         </div>
