@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import "../../styles/resetPassword.css";
@@ -14,8 +14,71 @@ function ResetPassword() {
     const [confirmPassword, setConfirmPassword] = useState("");
 
     const [loading, setLoading] = useState(false);
+    const [resending, setResending] = useState(false);
+
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+
+    const [resendCooldown, setResendCooldown] = useState(60);
+
+    /*
+     * Start / restore the resend countdown.
+     * This prevents the timer from resetting if the user
+     * refreshes the page.
+     */
+    useEffect(() => {
+        if (!email) {
+            return;
+        }
+
+        const storageKey = `otp_resend_cooldown_${email}`;
+
+        const storedTime = sessionStorage.getItem(storageKey);
+
+        if (storedTime) {
+            const remaining = Math.ceil(
+                (Number(storedTime) - Date.now()) / 1000
+            );
+
+            if (remaining > 0) {
+                setResendCooldown(remaining);
+            } else {
+                sessionStorage.removeItem(storageKey);
+                setResendCooldown(0);
+            }
+        } else {
+            const cooldownEnd = Date.now() + 60 * 1000;
+
+            sessionStorage.setItem(
+                storageKey,
+                cooldownEnd.toString()
+            );
+
+            setResendCooldown(60);
+        }
+    }, [email]);
+
+    /*
+     * Countdown timer
+     */
+    useEffect(() => {
+        if (resendCooldown <= 0) {
+            return;
+        }
+
+        const timer = setInterval(() => {
+            setResendCooldown((previous) => {
+                if (previous <= 1) {
+                    clearInterval(timer);
+                    return 0;
+                }
+
+                return previous - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [resendCooldown]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -56,6 +119,10 @@ function ResetPassword() {
                 new_password: newPassword,
             });
 
+            const storageKey = `otp_resend_cooldown_${email}`;
+
+            sessionStorage.removeItem(storageKey);
+
             setSuccess(
                 "Password reset successfully. Redirecting to login..."
             );
@@ -73,6 +140,85 @@ function ResetPassword() {
         }
     };
 
+    const handleResendOtp = async () => {
+        if (!email || resendCooldown > 0 || resending) {
+            return;
+        }
+
+        setError("");
+        setSuccess("");
+
+        try {
+            setResending(true);
+
+            await api.post("/api/auth/forgot-password", {
+                email,
+            });
+
+            const cooldownEnd = Date.now() + 60 * 1000;
+
+            const storageKey = `otp_resend_cooldown_${email}`;
+
+            sessionStorage.setItem(
+                storageKey,
+                cooldownEnd.toString()
+            );
+
+            setResendCooldown(60);
+            setOtp("");
+
+            setSuccess(
+                "A new OTP has been sent to your email."
+            );
+        } catch (error) {
+            setError(
+                error.response?.data?.detail ||
+                    "Unable to resend OTP. Please try again."
+            );
+        } finally {
+            setResending(false);
+        }
+    };
+
+    const handleRequestNewEmail = () => {
+        navigate("/forgot-password");
+    };
+
+    if (!email) {
+        return (
+            <div className="reset-password-page">
+                <div className="reset-password-card">
+
+                    <div className="reset-password-header">
+                        <h1>Reset Password</h1>
+
+                        <p>
+                            Your password reset session is
+                            missing. Please request a new OTP.
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        className="reset-password-submit"
+                        onClick={handleRequestNewEmail}
+                    >
+                        Request New OTP
+                    </button>
+
+                    <button
+                        type="button"
+                        className="reset-password-back"
+                        onClick={() => navigate("/login")}
+                    >
+                        ← Back to Login
+                    </button>
+
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="reset-password-page">
             <div className="reset-password-card">
@@ -84,6 +230,10 @@ function ResetPassword() {
                         Enter the OTP sent to your email and
                         create a new password.
                     </p>
+                </div>
+
+                <div className="reset-password-email">
+                    OTP sent to <strong>{email}</strong>
                 </div>
 
                 {error && (
@@ -174,21 +324,40 @@ function ResetPassword() {
                     </button>
                 </form>
 
+                <div className="reset-password-resend">
+                    {resendCooldown > 0 ? (
+                        <span>
+                            Resend OTP in{" "}
+                            <strong>
+                                {resendCooldown}s
+                            </strong>
+                        </span>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={handleResendOtp}
+                            disabled={resending}
+                        >
+                            {resending
+                                ? "Sending OTP..."
+                                : "Resend OTP"}
+                        </button>
+                    )}
+                </div>
+
                 <div className="reset-password-actions">
                     <button
                         type="button"
-                        onClick={() =>
-                            navigate("/forgot-password")
-                        }
-                        disabled={loading}
+                        onClick={handleRequestNewEmail}
+                        disabled={loading || resending}
                     >
-                        Didn't receive the OTP?
+                        Use a different email
                     </button>
 
                     <button
                         type="button"
                         onClick={() => navigate("/login")}
-                        disabled={loading}
+                        disabled={loading || resending}
                     >
                         ← Back to Login
                     </button>
